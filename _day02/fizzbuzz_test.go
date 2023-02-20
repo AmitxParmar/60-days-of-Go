@@ -15,6 +15,7 @@ func TestFizz(t *testing.T) {
 		{6, "Fizz"},
 		{9, "Fizz"},
 	}
+	
 	//Make channel const
 	count := make(chan int)
 	message := make(chan string)
