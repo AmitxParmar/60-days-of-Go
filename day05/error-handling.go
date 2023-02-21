@@ -1,0 +1,52 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+)
+// JSONRequest do a http request with json content-type
+func JSONRequest(url string, structure interface{}) (err error) {
+	// initialize a http client
+	client := &http.Client{}
+
+	// create a GET request but don't perform yet
+	var req *http.Request
+	req, err = http.NewRequest(http.MethodGet, url, nil)
+	// errors can occurs when create a request
+	// for example the url protocol can be wrong
+	if err != nil {
+		return err
+	}
+	// Added content type json
+	req.Header.Add("Content-Type", "application/json; charset=utf-8")
+	// Perform request and retrieve a response
+	var resp *http.Response
+	resp, err = client.Do(req)
+	if err != nil {
+		return err
+	}
+	// don't forget to clone the body
+	defer resp.Body.Close()
+	err = json.NewDecoder(resp.Body).Decode(structure)
+	if err != nil {
+		return err
+	}
+		return nil
+	}
+
+func main() {
+	// map json response into struct
+	s := struct {
+		Origin string `json:"origin`
+		URL string `json:"url"`
+		Args map[string]string`json:"args"`
+		Headers map[string]string `json"headers"`
+	}{}
+	//Call JSonRequest and verify raised error
+	switch err := JSONRequest("http://httpbin.org/get", &s).(type) {
+		// no errors, print Origin(your ip)
+		case nil:
+			fmt.Printf("Origin: %s\n", s.Origin)
+			// there's something wrong
