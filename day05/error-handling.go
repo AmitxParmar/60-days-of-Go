@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 )
+
 // JSONRequest do a http request with json content-type
 func JSONRequest(url string, structure interface{}) (err error) {
 	// initialize a http client
@@ -33,20 +34,36 @@ func JSONRequest(url string, structure interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-		return nil
-	}
+	return nil
+}
 
 func main() {
 	// map json response into struct
 	s := struct {
-		Origin string `json:"origin`
-		URL string `json:"url"`
-		Args map[string]string`json:"args"`
+		Origin  string            `json:"origin`
+		URL     string            `json:"url"`
+		Args    map[string]string `json:"args"`
 		Headers map[string]string `json"headers"`
 	}{}
 	//Call JSonRequest and verify raised error
 	switch err := JSONRequest("http://httpbin.org/get", &s).(type) {
-		// no errors, print Origin(your ip)
-		case nil:
-			fmt.Printf("Origin: %s\n", s.Origin)
-			// there's something wrong
+	// no errors, print Origin(your ip)
+	case nil:
+		fmt.Printf("Origin: %s\n", s.Origin)
+		// there's something wrong
+	case *url.Error:
+		fmt.Println("Error on request")
+	// error while parse json
+	case *json.SyntaxError:
+		fmt.Printf("Error while parse json: %q", err)
+	// possible error on structure mapping
+	case *json.InvalidUnmarshalError:
+		fmt.Println("Problem while map json to structure")
+	// there are many errors that can occurs
+	default:
+		fmt.Printf("Unexpected error %T = %+v\n", err, err)
+	}
+	// this approach prevent parse error messages.
+	// Even if the error messages change,
+	// you continue to capture them correctly
+}
