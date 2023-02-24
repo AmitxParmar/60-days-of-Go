@@ -73,3 +73,46 @@ type Pokemon struct {
 					version struct {
 						URL string `json: "url"`
 						Name string `json: "name"`
+					} `json: "version"`
+					GameIndex int `json: "game_index"`
+				} `json: "game_indices"`
+				BaseExperience int `json: "base_experience"`
+				Types []struct {
+					Slot int `json:"slot"`
+					Type struct {
+						URL string `json: "url"`
+						Name string `json: "name"`
+					} `json: "type"`
+				}`json:"types"`
+
+func main(){
+	// receive index as parameter in cli
+	index := flag.String("index", "1", "a number in pokedex")
+	flag.Parse()
+	//simple GET request on API
+	resp, err := http.Get("http://pokeapi.co/api/v2/pokemon/" + *index)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//empty struct to mapping pokemon fields
+	pk := Pokemon{}
+	// decode json
+	err = json.NewDecoder(resp.Body).Decode(&pk)
+	// don't forget to close the body
+	defer resp.Body.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+// print pokemon in standard output
+fmt.Printf("#%d %s \n", pk.Order, pk.Name)
+// iterate over your abilities and print
+fmt.Println("Abilities:")
+for _, form := range pk.Abilities {
+	fmt.Println("*", form.Abilities.Name)
+}
+// Iterate over your moves and print
+fmt.Println("Moves:"	
+for _, form := range pk.Moves {
+		fmt.Println("*", form.Move.Name, "-", form.Move.URL)
+	}
+}
