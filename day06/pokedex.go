@@ -9,102 +9,109 @@ import (
 )
 
 // An interesting link is https://mholt.github.io/json-to-go/
-// https://pokeapi.co/ return mapped into a struct
+// https://pokeapi.co/ return  mapped into a struct
 
 // Pokemon ...
 type Pokemon struct {
+
 	// forms
 	Forms []struct {
 		URL  string `json:"url"`
 		Name string `json:"name"`
 	} `json:"forms"`
-	// abilities
+
+	// Abilities
 	Abilities []struct {
 		Slot     int  `json:"slot"`
 		IsHidden bool `json:"is_hidden"`
 		Ability  struct {
 			URL  string `json:"url"`
 			Name string `json:"name"`
-		} `json: "ability"`
+		} `json:"ability"`
 	} `json:"abilities"`
-	// stats
+
+	// Stats
 	Stats []struct {
 		Stat struct {
 			URL  string `json:"url"`
 			Name string `json:"name"`
-		} `json:"stats"`
+		} `json:"stat"`
 		Effort   int `json:"effort"`
 		BaseStat int `json:"base_stat"`
 	} `json:"stats"`
+
 	// Name and Weight
 	Name   string `json:"name"`
 	Weight int    `json:"weight"`
+
 	// Moves
 	Moves []struct {
 		VersionGroupDetails []struct {
 			MoveLearnMethod struct {
 				URL  string `json:"url"`
 				Name string `json:"name"`
-			} `json: "move_learn_method"`
-			LevelLearnedAt int `json: "level_learned_at"`
+			} `json:"move_learn_method"`
+			LevelLearnedAt int `json:"level_learned_at"`
 			VersionGroup   struct {
 				URL  string `json:"url"`
-				Name string `json: "name"`
-			} `json: "version_group"`
-		} `json: "version_group_details"`
+				Name string `json:"name"`
+			} `json:"version_group"`
+		} `json:"version_group_details"`
 		Move struct {
 			URL  string `json:"url"`
-			Name string `json: "name"`
-		} `json: "move"`
-	} `json: "moves"`
+			Name string `json:"name"`
+		} `json:"move"`
+	} `json:"moves"`
+
 	// Sprites
 	Sprites struct {
-		BackFemale       interface{} `json: "back_female"`
-		BackShinyFemale  interface{} `json: "back_shiny_female"`
-		BackDefault      string      `json: "back_default"`
-		FrontFemale      interface{} `json: "back_default"`
-		FrontShinyFemale interface{} `json: "front_shiny_female"`
-		BackShiny        string      `json: "back_shiny"`
-		FrontDefault     string      `json: "front_default"`
-		FrontShiny       string      `json: "front_shiny`
+		BackFemale       interface{} `json:"back_female"`
+		BackShinyFemale  interface{} `json:"back_shiny_female"`
+		BackDefault      string      `json:"back_default"`
+		FrontFemale      interface{} `json:"front_female"`
+		FrontShinyFemale interface{} `json:"front_shiny_female"`
+		BackShiny        string      `json:"back_shiny"`
+		FrontDefault     string      `json:"front_default"`
+		FrontShiny       string      `json:"front_shiny"`
 	} `json:"sprites"`
-	// HeldItems, LocationAreaEncounters, Height, isDefault, Species, ID, Order, GameIndices, BaseExperience,
-	HeldItems              []interface{} `json: "held_items"`
-	LocationAreaEncounters string        `json: "location_area_encounters"`
-	Height                 int           `json: "location_area_height"`
-	isDefault              bool          `json: "height"`
-	Species                struct {
-		URL  string `json: "url"`
-		Name string `json: "name"`
-	} `json: "species"`
-	ID    int `json: "id"`
-	Order int `json: "order"`
+
+	// HeldItems, LocationAreaEncounters, Height, isDefault, Species, ID, Order, GameIndices, BaseExperience
+	HeldItems              []interface{} `json:"held_items"`
+	LocationAreaEncounters string        `json:"location_area_encounters"`
+	Height                 int           `json:"height"`
+	IsDefault              bool          `json:"is_default"`
+
+	// Species
+	Species struct {
+		URL  string `json:"url"`
+		Name string `json:"name"`
+	} `json:"species"`
+	ID    int `json:"id"`
+	Order int `json:"order"`
 
 	// GameIndices  > Version >> Url, Name,
 	//				> GameIndex
 	GameIndices []struct {
-		version struct {
-			URL  string `json: "url"`
-			Name string `json: "name"`
-		} `json: "version"`
-		GameIndex int `json: "game_index"`
-	} `json: "game_indices"`
-
-	// Base Experience
-	BaseExperience int `json: "base_experience"`
+		Version struct {
+			URL  string `json:"url"`
+			Name string `json:"name"`
+		} `json:"version"`
+		GameIndex int `json:"game_index"`
+	} `json:"game_indices"`
+	BaseExperience int `json:"base_experience"`
 
 	// Types
 	Types []struct {
 		Slot int `json:"slot"`
 		Type struct {
-			URL  string `json: "url"`
-			Name string `json: "name"`
-		} `json: "type"`
+			URL  string `json:"url"`
+			Name string `json:"name"`
+		} `json:"type"`
 	} `json:"types"`
 }
 
 func main() {
-	// receive index as parameter in cli
+	// receive index as parameter in CLI
 	index := flag.String("index", "1", "a number in pokedex")
 	flag.Parse()
 	//simple GET request on API
