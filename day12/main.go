@@ -5,46 +5,46 @@ import (
 	"log"
 	"net/http"
 
-	
-	"github.com/cassiobotaro/60-days-of-go/day11/cards"
+	"github.com/cassiobotaro/60-days-of-go/day12/cards"
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
 )
 
 // future ideas:
-// - json errors
 // - post unique
 // - persist layer
 // - tests
-// - separate model in diffrent file
-// - model and serializers??
 // controllers by package
 
-func createCard(w http.ResponseWriter, r *http.Request) {{
-	card := cards.CardSerializer{}
+// RenderJSON render a content as json(thinking about middleware)
+func RenderJSON(w http.ResponseWriter, content interface{}, statusCode int) {
+	// Set Content-Type as json
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	// HTTP STATUS CODE
+	w.WriteHeader(statusCode)
+	err := json.NewEncoder(w).Encode(content)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func createCard(w http.ResponseWriter, r *http.Request) {
+	card := cards.NewCardSerializer()
 	err := json.NewDecoder(r.Body).Decode(&card)
 	defer r.Body.Close()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		RenderJSON(w, map[string]string{"errors": err.Error()}, http.StatusInternalServerError)
+		return
 	}
 	if card.Validate() {
 		// not implemented yet
 		card.Save()
-		// set content type  as json
-		// maybe in future it will turned into a middleware
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		// returns card as a json
-		err  = json.NewEncoder(w).Encode(card)
-		if err ! nil {
-			log.Println(err)
-		}
+		RenderJSON(w, card, http.StatusCreated)
 	} else {
-		// status 401  - bad request
-		http.Error(w, card.Error(), http.StatusBadRequest)
+		// STATUS 401 - BAD REQUEST
+		RenderJSON(w, card.Errors, http.StatusBadRequest)
 	}
 }
-
-
 
 func main() {
 	// router is a router group
@@ -52,5 +52,8 @@ func main() {
 	r.HandleFunc("/card", createCard).Methods(http.MethodPost)
 	n := negroni.Classic() // Includes some default middlewares
 	n.UseHandler(r)
-	log.Fatal(http.ListenAndServe(":3000", n))
+
+	baseURL := "localhost:3000"
+	log.Printf("Server running at: http://%s", baseURL)
+	log.Fatal(http.ListenAndServe(baseURL, n))
 }
