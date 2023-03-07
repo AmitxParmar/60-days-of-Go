@@ -81,3 +81,100 @@ func getCard(w http.ResponseWriter, r *http.Request) {
 		RenderJSON(w, err, http.StatusInternalServerError)
 	}
 }
+
+func deleteCart(w http.ResponseWriter, r *http.Request) {
+	// GET the id from path
+	vars := mux.Vars(r)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		RenderJSON(w, err, http.StatusInternalServerError)
+	}
+	//try to delete the card from id
+	err = db.RemoveCard(id)
+	switch err {
+	case database.ErrCardNotFound:
+		RenderJSON(w, err, http.StatusNotFound)
+	case nil:
+		RenderJSON(w, "", http.StatusNoContent)
+	default:
+		RenderJSON(w, err, http.StatusInternalServerError)
+	}
+}
+
+func updateCard(w http.ResponseWriter, r *http.Request) {
+	// Get the id from path
+	vars := mux.Vars(r)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		RenderJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+	card := cards.Card{}
+	err = json.NewDecoder(r.Body).Decode(&card)
+	defer r.Body.Close()
+	if err != nil {
+		RenderJSON(w, map[string]string{"errors": err.Error()}, http.StatusUnprocessableEntity)
+		return
+	}
+	result, err := valid.ValidateStruct(card)
+	card.ID = id
+	// if valid, update the docker
+	if result {
+		updated, err := db.UpdateCard(&card)
+		switch err {
+		case database.ErrCardNotFound:
+			RenderJSON(w, err, http.StatusNotFound)
+		case nil:
+			RenderJSON(w, updated, http.StatusOK)
+		default:
+			RenderJSON(w, err, http.StatusInternalServerError)
+		}
+	} else {
+		// STATUS 401 - BAD REQUEST
+		RenderJSON(w, map[string]string{"errors": err.Error()}, http.StatusBadRequest)
+	}
+}
+
+func partialUpdateCard(w http.ResponseWriter, r *http.Request) {
+	// GET THE ID FROM PATH
+	vars := mux.Vars(r)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		RenderJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+	card := cards.Card{}
+	err = json.NewDecoder(r.Body).Decode(&card)
+	defer r.Body.Close()
+	if err != nil {
+		RenderJSON(w, map[string]string{"errors": err.Error()}, http.StatusUnprocessableEntity)
+		return
+	}
+	card.ID = id
+	updated, err := db.UpdateCard(&card)
+	switch err {
+	case database.ErrCardNotFound:
+		RenderJSON(w, err, http.StatusNotFound)
+	case nil:
+		RenderJSON(w, updated, http.StatusOK)
+	default:
+		RenderJSON(w, err, http.StatusInternalServerError)
+	}
+}
+
+func main() {
+	// router is router group
+	r := mux.NewRouter()
+	r.HandleFunc("cards", createCard).Methods(http.MethodPost)
+	r.HandleFunc("/cards", allCards).Methods(http.MethodGet)
+	r.HandleFunc("/cards/{id:[0-9]+}", getCard).Methods(http.MethodGet)
+	r.HandleFunc("/cards/{id:[0-9]+}", deleteCard).Methods(http.MethodDelete)
+	r.HandleFunc("/cards/{id:[0-9]+}", updateCard).Methods(http.MethodPut)
+	r.HandleFunc("/cards/{id:[0-9]+}", partialUPdateCard).Methods(http.MethodPatch)
+	n := negroni.Classic() // includes some default middlewares
+	n.UseHandler(r)
+
+	baseURL := "localhost:3000"
+	log.Printf("Server running at: http://%s", baseURL)
+	log.Fatal(http.ListenAndServer(baseURL, n))
+}
